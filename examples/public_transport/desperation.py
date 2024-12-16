@@ -106,15 +106,15 @@ if __name__ == '__main__':
 
     capacity_info = load_capacity_info(indir + "/lyon_network_gtfs_mod.json")
 
-    bus_service = PublicTransportMobilityService("BUS", capacity_info=capacity_info)
+    bus_service = PublicTransportMobilityService("BUS")
     bus_service.attach_vehicle_observer(CSVVehicleObserver(outdir + "/veh.csv"))
     mmgraph.layers["BUSLayer"].add_mobility_service(bus_service)
 
-    tram_service = PublicTransportMobilityService("TRAM", capacity_info=capacity_info)
+    tram_service = PublicTransportMobilityService("TRAM")
     tram_service.attach_vehicle_observer(CSVVehicleObserver(outdir + "/veh.csv"))
     mmgraph.layers["TRAMLayer"].add_mobility_service(tram_service)
 
-    metro_service = PublicTransportMobilityService("METRO", capacity_info=capacity_info)
+    metro_service = PublicTransportMobilityService("METRO")
     metro_service.attach_vehicle_observer(CSVVehicleObserver(outdir + "/veh.csv"))
     mmgraph.layers["METROLayer"].add_mobility_service(metro_service)
 
