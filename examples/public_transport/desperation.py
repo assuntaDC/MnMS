@@ -75,7 +75,7 @@ def force_public_transport(demand_file):
 if __name__ == '__main__':
     NX = 100
     NY = 100
-    DIST_CONNECTION = 1e2
+    DIST_CONNECTION = 500
 
     mmgraph = load_graph(indir + "/lyon_network_gtfs_mod.json")
     start_time = time.time()
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     metro_service.attach_vehicle_observer(CSVVehicleObserver(outdir + "/veh.csv"))
     mmgraph.layers["METROLayer"].add_mobility_service(metro_service)
 
-    demand_file_name = indir + "/demand_custom.csv"
+    demand_file_name = indir + "/cecile_demand.csv"
     force_public_transport(demand_file_name)
     demand = CSVDemandManager(demand_file_name)
     demand.add_user_observer(CSVUserObserver(outdir + "/user.csv"), user_ids="all")
@@ -132,6 +132,6 @@ if __name__ == '__main__':
                             outfile=outdir + "/travel_time_link.csv")
 
     start = time.time()
-    supervisor.run(Time('16:41:00'), Time('20:30:00'), Dt(seconds=30), 10)
+    supervisor.run(Time('7:30:00'), Time('8:30:00'), Dt(seconds=30), 10)
     end = time.time()
     print(f'SIMULATION COMPLETED IN {end-start} s')
