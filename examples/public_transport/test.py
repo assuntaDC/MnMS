@@ -1,4 +1,3 @@
-import geopandas as gpd
 import pandas as pd
 from pyproj import Transformer, CRS
 
@@ -21,3 +20,11 @@ def convert_to_lambert_str(row):
 
 df['LAMBERT'] = df.apply(convert_to_lambert_str, axis=1)
 print(df)
+
+pd.set_option('display.max_rows', None)  # Display all rows
+pd.set_option('display.max_columns', None)  # Display all columns
+
+demand = pd.read_csv('INPUTS/test_demandes.csv', sep=';')
+demand = demand.merge(df[['LAMBERT', 'Stop Name']], how='left', left_on='ORIGIN', right_on='LAMBERT')
+demand = demand.merge(df[['LAMBERT', 'Stop Name']], how='left', left_on='DESTINATION', right_on='LAMBERT', suffixes=('', ' Dest'))
+print(demand[['ID', 'Stop Name', 'Stop Name Dest']])

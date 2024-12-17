@@ -67,7 +67,7 @@ def force_public_transport(demand_file):
     print('Forcing public transport from {}'.format(demand_file))
     demand_data = pd.read_csv(demand_file, sep=';')
     print('N queries:', len(demand_data), 'N users:', len(np.unique(demand_data['ID'])))
-    demand_data['MOBILITY SERVICES'] = 'METRO TRAM BUS'
+    demand_data['MOBILITY SERVICES'] = 'TRAM'
     demand_data.to_csv(demand_file, sep=';', index=False)
 
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     metro_service.attach_vehicle_observer(CSVVehicleObserver(outdir + "/veh.csv"))
     mmgraph.layers["METROLayer"].add_mobility_service(metro_service)
 
-    demand_file_name = indir + "/cecile_demand.csv"
+    demand_file_name = indir + "/test_demandes.csv"
     force_public_transport(demand_file_name)
     demand = CSVDemandManager(demand_file_name)
     demand.add_user_observer(CSVUserObserver(outdir + "/user.csv"), user_ids="all")
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     start = time.time()
     # supervisor.run(Time('8:18:00'), Time('9:15:00'), Dt(seconds=30), 10)
-    supervisor.run(Time('7:30:00'), Time('8:30:00'), Dt(seconds=30), 10)
+    supervisor.run(Time('8:15:00'), Time('9:00:00'), Dt(seconds=30), 10)
     end = time.time()
     print(f'SIMULATION COMPLETED IN {end-start} s')
 

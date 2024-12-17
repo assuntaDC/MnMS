@@ -29,6 +29,7 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
         -user: user to pick-up and drop-off
         -veh: vehicle which will pick-up and drop-off user
     """
+    print('PU NODE', pu_node, '- IND PU', ind_pu, ' - DO NODE', do_node, ' - IND DO', ind_do)
     if veh.activity is not None and veh.activity.activity_type is not ActivityType.STOP:
         activities_including_curr = [veh.activity] + [a for a in veh.activities]
         decrement_insert_index = True
@@ -39,9 +40,11 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
         activities_including_curr = [a for a in veh.activities]
         decrement_insert_index = False
     if ind_pu == ind_do:
+        print('Executing IF')
         # Insertion modifies only one activity in vehicles' activities
         ind = ind_pu
         activity_to_modify = activities_including_curr[ind]
+        print('Acitivty to modify: ',activity_to_modify)
         pu_ind_inpath = veh.path_to_nodes(activity_to_modify.path).index(pu_node)
         do_ind_inpath = veh.path_to_nodes(activity_to_modify.path).index(do_node)
         if ind == 0:
@@ -55,6 +58,7 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
         # Deduce pickup and serving activities
         pu_path = activity_to_modify.path[start_ind_inpath:pu_ind_inpath]
         do_path = activity_to_modify.path[pu_ind_inpath:do_ind_inpath]
+        print('PU PATH: ', pu_path, 'DO PATH: ', do_path)
         pu_activity = VehicleActivityPickup(node=pu_node,
                                             path=pu_path,
                                             user=user)
@@ -63,6 +67,7 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
                                             user=user)
         # Modify activity_to_modify
         activity_to_modify.modify_path(activity_to_modify.path[do_ind_inpath:])
+        print('Activity to modify: ', activity_to_modify)
         # Insert the new activities and the modified one
         if ind == 0 and veh.activity is not None and veh.activity.activity_type is not ActivityType.STOP:
             # Interrupt current activity and insert the new activities plus the
@@ -90,30 +95,39 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
         assert ind_pu < ind_do, "Index where pickup activity is going to be inserted in "\
             "vehicle's activities is greater than index where serving activity is going "\
             "to be inserted: this is not consistent."
+        print('Executing IN ELSE')
         # Start by inserting serving activity since it is located after pickup
         activity_to_modify_do = activities_including_curr[ind_do]
+        print('Acitivty to modify DO', activity_to_modify_do)
         do_ind_inpath = veh.path_to_nodes(activity_to_modify_do.path).index(do_node)
         do_path = activity_to_modify_do.path[:do_ind_inpath]
+        print('DO PATH', do_path)
         do_activity = VehicleActivityServing(node=do_node,
                                             path=do_path,
                                             user=user)
         activity_to_modify_do.modify_path(activity_to_modify_do.path[do_ind_inpath:])
+        print('Acitivty to modify DO (after)', activity_to_modify_do)
         if decrement_insert_index:
             veh.activities.insert(max(0, ind_do-1), do_activity)
         else:
             veh.activities.insert(ind_do, do_activity)
         # Then insert pickup activity
+        print('Acitivty to modify DO (after)', activity_to_modify_do)
+
         activity_to_modify_pu = activities_including_curr[ind_pu]
+        print('Acitivty to modify PU', activity_to_modify_pu)
         pu_ind_inpath = veh.path_to_nodes(activity_to_modify_pu.path).index(pu_node)
         if ind_pu == 0:
             start_ind_inpath = veh.path_to_nodes(activity_to_modify_pu.path).index(veh._current_node)
         else:
             start_ind_inpath = 0
         pu_path = activity_to_modify_pu.path[start_ind_inpath:pu_ind_inpath]
+        print('PU PATH', pu_path)
         pu_activity = VehicleActivityPickup(node=pu_node,
                                             path=pu_path,
                                             user=user)
         activity_to_modify_pu.modify_path(activity_to_modify_pu.path[pu_ind_inpath:])
+        print('Acitivty to modify PU (after)', activity_to_modify_pu)
         if ind_pu == 0 and veh.activity is not None and veh.activity.activity_type is not ActivityType.STOP:
             # Interrupt current activity and insert the pickup activity plus the
             # modified one
@@ -125,6 +139,7 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
                 pu_activity.path[0] = (pu_activity.path[0][0], veh._remaining_link_length)
                 pu_activity.reset_path_iterator()
             for a in reversed([pu_activity, activity_to_modify_pu]):
+                print('Activity to modify PU inserted')
                 if decrement_insert_index:
                     veh.activities.insert(max(0, ind_pu-1), a)
                 else:
@@ -361,9 +376,12 @@ class PublicTransportMobilityService(AbstractMobilityService):
 
         pu_node_ind = line_nodes.index(user.current_node)
         do_node_ind = line_nodes.index(drop_node)
+        print('-' * 50)
+        print("PU NODE IND", pu_node_ind)
+        print("DO NODE IND", do_node_ind)
 
-        assert pu_node_ind <= do_node_ind, f'Pickup index {pu_node_ind} should necessarily take place '\
-            f'before dropoff index {do_node_ind} on the public transport line for User {user.id}.'
+        assert pu_node_ind <= do_node_ind, f'Pickup index {pu_node_ind} should necessarily take place ' \
+                                           f'before dropoff index {do_node_ind} on the public transport line for User {user.id}.'
 
         # Get the indices of veh.activities where pickup and serving activities
         # should be inserted
@@ -374,14 +392,21 @@ class PublicTransportMobilityService(AbstractMobilityService):
         else:
             activities_including_curr = [a for a in veh.activities]
         ind_pu = -1
+        ind_do = -1
         for ind, activity in enumerate(activities_including_curr):
             activity_node = activity.node
             activity_node_ind = line_nodes.index(activity_node)
+            print('--'*25)
+            print("IND", ind)
+            print("ACTIVITY NODE", activity_node)
+            print("ACTIVITY NODE IND", activity_node_ind)
             if pu_node_ind <= activity_node_ind and ind_pu == -1:
                 ind_pu = ind
-            if do_node_ind <= activity_node_ind:
+            if do_node_ind <= activity_node_ind and ind_do == -1:
                 ind_do = ind
-                break # if we found dropoff we necessarily have found pickup before
+                break  # if we found dropoff we necessarily have found pickup before
+        if ind_do == -1:
+            ind_do = ind
 
         # Insert the activities corresponding to pickup and serving in vehicles' activities
         _insert_in_activity(user.current_node, ind_pu, drop_node, ind_do, user, veh)
