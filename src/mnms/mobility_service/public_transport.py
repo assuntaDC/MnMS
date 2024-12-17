@@ -44,7 +44,7 @@ def _insert_in_activity(pu_node, ind_pu, do_node, ind_do, user, veh):
         # Insertion modifies only one activity in vehicles' activities
         ind = ind_pu
         activity_to_modify = activities_including_curr[ind]
-        print('Acitivty to modify: ',activity_to_modify)
+        print('Acitivty to modify: ', activity_to_modify)
         pu_ind_inpath = veh.path_to_nodes(activity_to_modify.path).index(pu_node)
         do_ind_inpath = veh.path_to_nodes(activity_to_modify.path).index(do_node)
         if ind == 0:
